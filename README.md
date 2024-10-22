@@ -1,6 +1,6 @@
 # Fitness Tracker
 
-An open-source alternative to popular fitness tracking applications like MyFitnessPal and MacroFactor, focused on weight management and progress visualization.
+An open-source alternative to popular fitness tracking applications like MyFitnessPal and MacroFactor, focused on weight management and progress visualisation.
 
 ## Project Overview
 

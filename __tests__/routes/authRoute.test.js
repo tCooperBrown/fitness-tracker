@@ -1,5 +1,5 @@
-import { createUserViaAPI, user } from "../userTestUtils.js";
-import { logIn } from "../utils/authUtils.js";
+import { createUserViaAPI, user } from "../../userTestUtils.js";
+import { logIn } from "../../utils/authUtils.js";
 
 describe("creating a user", () => {
   test("creating a new user", async () => {

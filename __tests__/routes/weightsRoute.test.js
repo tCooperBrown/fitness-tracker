@@ -1,8 +1,11 @@
-import { db } from "../dbConnection.js";
-import { user } from "../userTestUtils.js";
-import { logIn } from "../utils/authUtils.js";
-import { clearScaleEntries, insertScaleEntry } from "../utils/weightsUtils.js";
-import { testClient } from "./setup/setup.js";
+import { db } from "../../dbConnection.js";
+import { user } from "../../userTestUtils.js";
+import { logIn } from "../../utils/authUtils.js";
+import {
+  clearScaleEntries,
+  insertScaleEntry,
+} from "../../utils/weightsUtils.js";
+import { testClient } from "../setup/setup.js";
 
 beforeEach(async () => {
   await clearScaleEntries(user.id);

@@ -1,6 +1,7 @@
 import express from "express";
 import { router as authRouter } from "./routes/auth.js";
 import { router as scaleWeightRouter } from "./routes/scaleWeight.js";
+import { router as goalRouter } from "./routes/goal.js";
 import { passport } from "./middleware/authMiddleware.js";
 import { ConnectSessionKnexStore } from "connect-session-knex";
 import session from "express-session";
@@ -32,5 +33,6 @@ app.use(passport.session());
 
 app.use(authRouter);
 app.use(scaleWeightRouter);
+app.use(goalRouter);
 
 export { app };
