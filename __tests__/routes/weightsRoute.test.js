@@ -32,7 +32,7 @@ describe("retrieving a user's scale weight entries", () => {
             expect.objectContaining({ userId, weight: 60 }),
             expect.objectContaining({ userId, weight: 70 }),
             expect.objectContaining({ userId, weight: 80 }),
-          ])
+          ]),
         );
       });
   });
@@ -103,7 +103,7 @@ describe("updating user scale weight entries", () => {
       expect.arrayContaining([
         expect.objectContaining({ userId: user.id, weight: 79.6 }),
         expect.objectContaining({ userId: user.id, weight: 80.1 }),
-      ])
+      ]),
     );
   });
 });

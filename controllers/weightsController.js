@@ -9,7 +9,7 @@ const deleteScaleWeightEntry = async (userId, date) => {
 
   if (!scaleWeightEntry) {
     const err = new Error(
-      `No scale weight entry exists for this date: ${date}`
+      `No scale weight entry exists for this date: ${date}`,
     );
     err.code = 400;
     throw err;

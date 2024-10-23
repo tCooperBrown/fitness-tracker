@@ -2,8 +2,30 @@ import express from "express";
 import { passport } from "../middleware/authMiddleware.js";
 import crypto from "crypto";
 import { db } from "../dbConnection.js";
-
+import { AppError } from "../Types/errorTypes.js";
+import { asyncHandler } from "../middleware/errorMiddleware.js";
+import { z } from "zod";
 const router = express.Router();
+
+const signupSchema = z.object({
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8)
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    ),
+  firstName: z.string().min(1).max(50),
+  lastName: z.string().min(1).max(50),
+  height: z.number().positive().max(300),
+  gender: z.enum(["male", "female"]),
+  dateOfBirth: z.string().refine((date) => {
+    const birthDate = new Date(date);
+    const age = new Date().getFullYear() - birthDate.getFullYear();
+    return age >= 18 && age <= 120;
+  }, "Age must be between 18 and 120 years"),
+});
 
 router.get("/", (req, res, next) => {
   // Return once ready for frontend implementation.
@@ -35,11 +57,24 @@ router.post(
   })
 );
 
-router.post("/api/signup", async (req, res, next) => {
-  try {
+router.post(
+  "/api/signup",
+  asyncHandler(async (req, res, next) => {
+    const validatedData = await signupSchema
+      .parseAsync(req.body)
+      .catch((err) => {
+        throw new AppError(err.errors[0].message, 400);
+      });
+
+    const existingUser = await db("users")
+      .where({ email: validatedData.email })
+      .first();
+
+    if (existingUser) {
+      throw new AppError("Email already registered", 409);
+    }
+
     const salt = crypto.randomBytes(16);
-    const { email, firstName, lastName, height, gender, dateOfBirth } =
-      req.body;
 
     const passwordHash = await new Promise((resolve, reject) => {
       crypto.pbkdf2(
@@ -55,30 +90,32 @@ router.post("/api/signup", async (req, res, next) => {
       );
     });
 
-    const [userId] = await db("users")
-      .insert({
-        email,
-        passwordHash,
-        firstName,
-        lastName,
-        height,
-        gender,
-        dateOfBirth,
-        salt,
-      })
-      .returning("id");
+    const [user] = await db.transaction((trx) =>
+      trx("users")
+        .insert({
+          email: validatedData.email,
+          passwordHash,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          height: validatedData.height,
+          gender: validatedData.gender,
+          dateOfBirth: validatedData.dateOfBirth,
+          salt,
+        })
+        .returning(["id", "email"])
+    );
 
-    const user = { id: userId.id, email };
-    req.login(user, (err) => {
+    req.login({ id: user.id, email: user.email }, (err) => {
       if (err) {
-        return next(err);
+        return next(new AppError("Login failed after signup", 500, false));
       }
-      res.status(201).json({ message: `User created with email: ${email}` });
+      res.status(201).json({
+        status: "success",
+        message: "User created successfully",
+        data: { email: user.email },
+      });
     });
-  } catch (error) {
-    console.error("Signup error:", error);
-    res.status(500).json({ error: "An error occurred during signup" });
-  }
-});
+  })
+);
 
 export { router };

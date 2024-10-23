@@ -20,7 +20,7 @@ describe("Modifying a user's active goal", () => {
       .expect(201)
       .expect((res) => {
         expect(res.body.message).toBe(
-          `Goal successfully created for userId: ${user.id}`
+          `Goal successfully created for userId: ${user.id}`,
         );
       });
   });

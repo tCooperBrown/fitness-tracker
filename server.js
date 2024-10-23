@@ -6,6 +6,7 @@ import { passport } from "./middleware/authMiddleware.js";
 import { ConnectSessionKnexStore } from "connect-session-knex";
 import session from "express-session";
 import { db } from "./dbConnection.js";
+import { errorHandler, errorLogger } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
@@ -25,14 +26,19 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Routes
 app.use(authRouter);
 app.use(scaleWeightRouter);
 app.use(goalRouter);
+
+// Error logging and handling
+app.use(errorLogger);
+app.use(errorHandler);
 
 export { app };

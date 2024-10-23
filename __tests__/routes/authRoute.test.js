@@ -7,15 +7,17 @@ describe("creating a user", () => {
       email: "testEmail2@email.com",
       firstName: "John",
       lastName: "Smith",
-      password: "password1234!",
+      password: "Password1234!",
       height: 185,
       gender: "male",
-      dateOfBirth: new Date(),
+      dateOfBirth: new Date(1998, 0, 1).toISOString(),
     })
       .expect(201)
       .expect((res) => {
         expect(res.body).toMatchObject({
-          message: "User created with email: testEmail2@email.com",
+          status: "success",
+          message: "User created successfully",
+          data: { email: "testEmail2@email.com" },
         });
       });
   });
