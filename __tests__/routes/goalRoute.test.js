@@ -8,20 +8,31 @@ beforeEach(async () => {
   await logIn({ email: user.email, password: user.password });
 });
 
-describe("Modifying a user's active goal", () => {
-  test("creating a new goal", async () => {
+describe("Creating new goals", () => {
+  test("creating a new goal given no goal exists on date of entry", async () => {
     const goalType = "loss";
     const startDate = new Date();
     const goalWeight = 62;
 
     await testClient
       .post("/api/goal")
-      .send({ goalType, startDate, goalWeight, userId: user.id })
+      .send({ goalType, goalWeight, userId: user.id })
       .expect(201)
       .expect((res) => {
-        expect(res.body.message).toBe(
-          `Goal successfully created for userId: ${user.id}`,
-        );
+        expect(res.body).toMatchObject({
+          status: "success",
+          message: "Goal successfully created.",
+          data: {
+            goal: {
+              endDate: null,
+              goalType: "loss",
+              goalWeight: 62,
+              id: 1,
+              optimisticETA: null,
+              userId: 1,
+            },
+          },
+        });
       });
   });
 });
@@ -34,23 +45,31 @@ describe("interacting with a user's existing goals", () => {
   beforeEach(async () => {
     await testClient
       .post("/api/goal")
-      .send({ goalType, startDate, goalWeight, userId: user.id })
+      .send({ goalType, startDate, goalWeight })
       .then((res) => {
-        goalId = res.body.goal[0].id;
+        goalId = res.body.data.goal.id;
       });
   });
 
   test("retrieving a user's goals", async () => {
     await testClient
-      .get(`/api/goal`)
+      .get("/api/goal")
       .expect(200)
       .expect((res) => {
-        expect(res.body.goalEntries[0]).toMatchObject({
-          goalType,
-          goalWeight,
-          startDate,
-          userId: user.id,
-          id: goalId,
+        expect(res.body.data.goalEntries).toHaveLength(1);
+        expect(res.body).toMatchObject({
+          status: "success",
+          message: "Goal entries retrieved.",
+          data: {
+            goalEntries: expect.arrayContaining([
+              expect.objectContaining({
+                goalType,
+                goalWeight,
+                id: goalId,
+                userId: user.id,
+              }),
+            ]),
+          },
         });
       });
   });
@@ -58,16 +77,21 @@ describe("interacting with a user's existing goals", () => {
   test("updating an existing goal", async () => {
     await testClient
       .put("/api/goal")
-      .send({ goalId, goalType, goalWeight })
-      .expect(201)
+      .send({ goalId, goalType: "gain", goalWeight: 84 })
+      .expect(200)
       .expect((res) => {
-        expect(res.body.message).toBe("Goal updated successfully");
-        expect(res.body.goal).toMatchObject({
-          goalType,
-          goalWeight,
-          startDate,
-          userId: user.id,
-          id: goalId,
+        expect(res.body).toMatchObject({
+          status: "success",
+          message: "Goal updated successfully.",
+          data: {
+            updatedGoal: expect.objectContaining({
+              goalType: "gain",
+              goalWeight: 84,
+              id: goalId,
+              startDate: expect.any(String),
+              userId: user.id,
+            }),
+          },
         });
       });
   });
