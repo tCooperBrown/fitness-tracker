@@ -1,5 +1,5 @@
 import { createUserViaAPI, user } from "../../userTestUtils.js";
-import { logIn } from "../../utils/authUtils.js";
+import { logIn, logOut } from "../../utils/authUtils.js";
 
 describe("creating a user", () => {
   test("creating a new user", async () => {
@@ -41,6 +41,19 @@ describe("logging in to a user account", () => {
     const { email } = user;
 
     await logIn({ email, password: "incorrectPass" })
+      .redirects(1)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toMatchObject({
+          message: "Session not currently authenticated.",
+        });
+      });
+  });
+});
+
+describe("logging out of a user account", () => {
+  test("logging out of an existing user account", async () => {
+    await logOut()
       .redirects(1)
       .expect(200)
       .expect((res) => {
