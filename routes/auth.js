@@ -57,8 +57,6 @@ router.post(
   })
 );
 
-// dev notes 2024-10-24
-// does rejecting the err in in the pbkdf2 promise go through the expected error normalisation path.
 router.post(
   "/api/signup",
   asyncHandler(async (req, res, next) => {
