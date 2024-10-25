@@ -8,14 +8,13 @@ import session from "express-session";
 import { db } from "./dbConnection.js";
 import { errorHandler, errorLogger } from "./middleware/errorMiddleware.js";
 
-const app = express();
-
-app.use(express.json());
-
 const store = new ConnectSessionKnexStore({
   knex: db,
   tableName: "sessions",
+  createTable: true,
 });
+
+const app = express();
 
 app.use(
   session({
@@ -26,8 +25,10 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000,
     },
-  }),
+  })
 );
+
+app.use(express.json());
 
 app.use(passport.initialize());
 app.use(passport.session());

@@ -1,6 +1,11 @@
 import { db } from "./dbConnection";
-const tablesToTruncate = ["users", "scale_weight", "goal", "sessions"];
 
-beforeEach(() => {
-  return Promise.all(tablesToTruncate.map((t) => db(t).truncate()));
+beforeEach(async () => {
+  const expectedTables = ["users", "scale_weight", "goal", "sessions"];
+  const hasSessionsTable = await db.schema.hasTable("sessions");
+  const tablesToTruncate = hasSessionsTable
+    ? expectedTables
+    : expectedTables.filter((table) => table !== "sessions");
+
+  await Promise.all(tablesToTruncate.map((t) => db(t).truncate()));
 });
