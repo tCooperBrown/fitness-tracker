@@ -5,9 +5,6 @@ import { asyncHandler } from "../middleware/errorMiddleware.js";
 import { z } from "zod";
 import { AppError } from "../Types/errorTypes.js";
 
-// 1. Dropped support for explicitly specifiying start date as intended behaviour is to
-// create a new goal on the actual start date.
-// 2. Will alter db schema in upcoming commit.
 const baseGoalSchema = z.object({
   goalType: z.enum(["loss", "gain", "maintain"]),
   goalWeight: z
