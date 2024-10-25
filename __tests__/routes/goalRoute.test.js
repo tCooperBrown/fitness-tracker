@@ -11,7 +11,6 @@ beforeEach(async () => {
 describe("Creating new goals", () => {
   test("creating a new goal given no goal exists on date of entry", async () => {
     const goalType = "loss";
-    const startDate = new Date();
     const goalWeight = 62;
 
     await testClient
