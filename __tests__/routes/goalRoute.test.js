@@ -15,7 +15,7 @@ describe("Creating new goals", () => {
 
     await testClient
       .post("/api/goal")
-      .send({ goalType, goalWeight, userId: user.id })
+      .send({ goalType, goalWeight })
       .expect(201)
       .expect((res) => {
         expect(res.body).toMatchObject({
