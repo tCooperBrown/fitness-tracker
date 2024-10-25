@@ -1,21 +1,17 @@
 import { user } from "../../userTestUtils.js";
 import { logIn } from "../../utils/authUtils.js";
 import { testClient } from "../setup/setup.js";
+import { createGoalViaAPI } from "../../testUtils/routes/goalRoute.testUtils.js";
 
-// JIRA - KAN-4 - implement testUtil for goal creation
-//  Jest wiping entries between tests
 beforeEach(async () => {
   await logIn({ email: user.email, password: user.password });
 });
 
 describe("Creating new goals", () => {
   test("creating a new goal given no goal exists on date of entry", async () => {
-    const goalType = "loss";
-    const goalWeight = 62;
+    const goalCreationInputs = { goalType: "loss", goalWeight: 62 };
 
-    await testClient
-      .post("/api/goal")
-      .send({ goalType, goalWeight })
+    await createGoalViaAPI(goalCreationInputs)
       .expect(201)
       .expect((res) => {
         expect(res.body).toMatchObject({
@@ -24,11 +20,11 @@ describe("Creating new goals", () => {
           data: {
             goal: {
               endDate: null,
-              goalType: "loss",
-              goalWeight: 62,
+              goalType: goalCreationInputs.goalType,
+              goalWeight: goalCreationInputs.goalWeight,
               id: 1,
               optimisticETA: null,
-              userId: 1,
+              userId: user.id,
             },
           },
         });

@@ -1,8 +1,8 @@
 import express from "express";
-import { isAuthenticated } from "../middleware/authMiddleware.js";
-import { db } from "../dbConnection.js";
-import { asyncHandler } from "../middleware/errorMiddleware.js";
 import { z } from "zod";
+import { db } from "../dbConnection.js";
+import { isAuthenticated } from "../middleware/authMiddleware.js";
+import { asyncHandler } from "../middleware/errorMiddleware.js";
 import { AppError } from "../Types/errorTypes.js";
 
 const baseGoalSchema = z.object({
