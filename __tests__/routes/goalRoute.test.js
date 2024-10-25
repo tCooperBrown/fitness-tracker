@@ -38,13 +38,12 @@ describe("Creating new goals", () => {
 
 describe("interacting with a user's existing goals", () => {
   const goalType = "loss";
-  const startDate = new Date().toISOString();
   const goalWeight = 62;
   let goalId;
   beforeEach(async () => {
     await testClient
       .post("/api/goal")
-      .send({ goalType, startDate, goalWeight })
+      .send({ goalType, goalWeight })
       .then((res) => {
         goalId = res.body.data.goal.id;
       });
