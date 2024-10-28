@@ -1,3 +1,4 @@
+import { calculateWeightProjection } from "../../controllers/weightsController.js";
 import { db } from "../../dbConnection.js";
 import { user } from "../../userTestUtils.js";
 import { logIn } from "../../utils/authUtils.js";
@@ -5,6 +6,7 @@ import {
   clearScaleEntries,
   insertScaleEntry,
 } from "../../utils/weightsUtils.js";
+import { weightData } from "../__mocks__/weightData.js";
 import { testClient } from "../setup/setup.js";
 
 beforeEach(async () => {
@@ -32,7 +34,7 @@ describe("retrieving a user's scale weight entries", () => {
             expect.objectContaining({ userId, weight: 60 }),
             expect.objectContaining({ userId, weight: 70 }),
             expect.objectContaining({ userId, weight: 80 }),
-          ]),
+          ])
         );
       });
   });
@@ -103,7 +105,51 @@ describe("updating user scale weight entries", () => {
       expect.arrayContaining([
         expect.objectContaining({ userId: user.id, weight: 79.6 }),
         expect.objectContaining({ userId: user.id, weight: 80.1 }),
-      ]),
+      ])
     );
+  });
+});
+
+const insertScaleEntries = async (entries, userId) => {
+  try {
+    const formattedEntries = entries.map((entry) => ({
+      userId: userId,
+      weight: entry.weight,
+      createdAt: new Date(entry.date).toISOString(),
+    }));
+
+    const batchSize = 100;
+    for (let i = 0; i < formattedEntries.length; i += batchSize) {
+      const batch = formattedEntries.slice(i, i + batchSize);
+      await db("scale_weight").insert(batch);
+    }
+
+    return {
+      success: true,
+      message: `Successfully inserted ${entries.length} weight entries for user ${userId}`,
+      count: entries.length,
+    };
+  } catch (error) {
+    console.error("Error inserting scale entries:", error);
+    throw new Error(`Failed to insert scale entries: ${error.message}`);
+  }
+};
+
+describe("retrieving user weight projections", () => {
+  // Unit test included here. Integration tests and more structured testing to be added soon.
+  test("retrieving a 30day projection", async () => {
+    await insertScaleEntries(weightData, user.id);
+
+    const scaleWeightEntries = await db
+      .select("*")
+      .from("scale_weight")
+      .where({ userId: user.id });
+
+    expect(calculateWeightProjection(scaleWeightEntries)).toMatchObject({
+      currentTrendWeight: 78.60458069164304,
+      dailyChangeTrend: -0.07600743782365099,
+      projectedWeight: 76.3243575569335,
+      confidence: "low",
+    });
   });
 });

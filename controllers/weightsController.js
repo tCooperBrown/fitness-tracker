@@ -28,8 +28,114 @@ const verifyExistingScaleWeight = async (userId) => {
   return result !== undefined;
 };
 
+/**
+ * Standard EMA formula used:
+ * EMA = (Current Value × Alpha) + (Previous EMA × (1 - Alpha))
+ *
+ * 2 EMA values are calculated:
+ * currentTrendWeight: weightEMA
+ * dailyChangeTrend: dailyChangeEMA
+ *
+ * time-weighted formula: α_t = 1 - (1 - α)^t
+ * time-weighted alphas provide resilience against irregular user weight logging.
+ */
+
+const calculateWeightProjection = (weightData, daysToProject = 30) => {
+  const BASE_ALPHA_WEIGHT = 0.1; // Base alpha for daily measurements
+  const WEEKS_FOR_TREND = 2; // Look-back period for alpha trend
+  const BASE_ALPHA_TREND = 2 / (WEEKS_FOR_TREND * 7 + 1); // Base alpha for trend where α = 2 / (N + 1), with N being days.
+
+  // Sort data by date
+  const sortedData = [...weightData].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
+  // Initialise with first data point
+  let weightEMA = sortedData[0].weight;
+  let previousWeightEMA = weightEMA;
+  let dailyChangeEMA = 0;
+  let lastDate = new Date(sortedData[0].createdAt);
+
+  sortedData.forEach((entry, index) => {
+    if (index === 0) return;
+
+    const currentDate = new Date(entry.createdAt);
+    const daysSinceLastWeighIn =
+      (currentDate - lastDate) / (1000 * 60 * 60 * 24);
+
+    // Adjust alpha based on time elapsed
+    // Use time-weighted formula: α_t = 1 - (1 - α)^t
+    const timeAdjustedAlpha =
+      1 - Math.pow(1 - BASE_ALPHA_WEIGHT, daysSinceLastWeighIn);
+    const timeAdjustedAlphaTrend =
+      1 - Math.pow(1 - BASE_ALPHA_TREND, daysSinceLastWeighIn);
+
+    // Update weight EMA with time-adjusted alpha
+    weightEMA =
+      entry.weight * timeAdjustedAlpha + weightEMA * (1 - timeAdjustedAlpha);
+
+    // Calculate daily rate of change
+    const weightChange = weightEMA - previousWeightEMA;
+    const dailyChange = weightChange / daysSinceLastWeighIn; // Normalise to daily rate
+
+    // Update trend EMA
+    dailyChangeEMA =
+      dailyChange * timeAdjustedAlphaTrend +
+      dailyChangeEMA * (1 - timeAdjustedAlphaTrend);
+
+    previousWeightEMA = weightEMA;
+    lastDate = currentDate;
+  });
+
+  // Project future weight
+  const projectedWeight = weightEMA + dailyChangeEMA * daysToProject;
+
+  return {
+    currentTrendWeight: weightEMA,
+    dailyChangeTrend: dailyChangeEMA,
+    projectedWeight,
+    confidence: calculateConfidence(weightData),
+  };
+};
+
+const calculateConfidence = (weightData) => {
+  if (weightData.length < 5) return "low";
+
+  const dates = weightData.map((d) => new Date(d.createdAt));
+  const daysBetweenWeighIns = [];
+
+  // Populate daysBetweenWeighIns by calculating days between each entry
+  for (let i = 1; i < dates.length; i++) {
+    const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+    daysBetweenWeighIns.push(diff);
+  }
+
+  // Get the last 30 days of data
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentWeighIns = weightData.filter(
+    (d) => new Date(d.date) >= thirtyDaysAgo
+  ).length;
+
+  // Calculate confidence based on frequency and consistency
+  if (recentWeighIns < 8) return "low"; // Less than 2 weigh-ins per week
+  if (recentWeighIns < 12) return "medium"; // Less than 3 weigh-ins per week
+
+  // Check consistency of weigh-ins
+  // Calculate the standard deviation (square root of variance) of the days between weigh-ins, compared to an ideal interval of 3 days.
+  const variance = Math.sqrt(
+    daysBetweenWeighIns.reduce((a, b) => a + Math.pow(b - 3, 2), 0) /
+      daysBetweenWeighIns.length
+  );
+
+  if (variance > 4) return "low";
+  if (variance > 2) return "medium";
+  return "high";
+};
+
 export {
   deleteScaleWeightEntry,
   retrieveWeightData,
   verifyExistingScaleWeight,
+  calculateWeightProjection,
 };
