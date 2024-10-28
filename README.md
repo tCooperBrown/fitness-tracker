@@ -14,7 +14,7 @@ A frontend interface is planned for future development phases.
 
 ## Core Features
 
-### Current Implementation
+### Currently planned Implementation
 
 - User profile creation with:
   - Initial weight
