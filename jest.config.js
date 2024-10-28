@@ -15,7 +15,10 @@ const config = {
   transformIgnorePatterns: [
     "node_modules/(?!(module-that-needs-to-be-transformed)/)",
   ],
-  modulePathIgnorePatterns: ["<rootDir>/__tests__/setup"],
+  modulePathIgnorePatterns: [
+    "<rootDir>/__tests__/setup",
+    "<rootDir>/__tests__/__mocks__",
+  ],
 };
 
 export default config;
