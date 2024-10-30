@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest --verbose --runInBand",
-    "start": "node server.js"
+    "dev": "node index.js"
   },
   "keywords": [],
   "author": "",
