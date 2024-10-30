@@ -136,7 +136,6 @@ const insertScaleEntries = async (entries, userId) => {
 };
 
 describe("retrieving user weight projections", () => {
-  // Unit test included here. Integration tests and more structured testing to be added soon.
   test("retrieving a 30day projection", async () => {
     await insertScaleEntries(weightData, user.id);
 

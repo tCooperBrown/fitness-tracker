@@ -30,6 +30,24 @@ describe("Creating new goals", () => {
         });
       });
   });
+
+  test("attempting to create a new goal on the same start date as an existing goal", async () => {
+    const goalCreationInputs1 = { goalType: "gain", goalWeight: 70 };
+    const goalCreationInputs2 = { goalType: "loss", goalWeight: 62 };
+
+    await createGoalViaAPI(goalCreationInputs1);
+
+    await createGoalViaAPI(goalCreationInputs2)
+      .expect(409)
+      .expect((res) => {
+        expect(res.body).toMatchObject({
+          operational: "true",
+          status: "fail",
+          message: "Goal already exists for this date",
+          operational: true,
+        });
+      });
+  });
 });
 
 describe("interacting with a user's existing goals", () => {
