@@ -31,9 +31,8 @@ router.post(
         throw new AppError(err.errors[0].message, 400);
       });
 
-    // devNote: need to confirm string formatting. Create test to see if this works
-    // e.g. suffix "*.930Z" likely cut off when serialised in db.
-    const todayISOString = new Date().toISOString();
+    let todayISOString = new Date();
+    todayISOString = todayISOString.toISOString().substring(0, 10);
 
     const existingGoal = await db("goal")
       .where({
