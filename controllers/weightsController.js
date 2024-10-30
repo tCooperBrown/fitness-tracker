@@ -50,7 +50,6 @@ const calculateWeightProjection = (weightData, daysToProject = 30) => {
     (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
   );
 
-  // Initialise with first data point
   let weightEMA = sortedData[0].weight;
   let previousWeightEMA = weightEMA;
   let dailyChangeEMA = 0;
@@ -94,43 +93,7 @@ const calculateWeightProjection = (weightData, daysToProject = 30) => {
     currentTrendWeight: weightEMA,
     dailyChangeTrend: dailyChangeEMA,
     projectedWeight,
-    confidence: calculateConfidence(weightData),
   };
-};
-
-const calculateConfidence = (weightData) => {
-  if (weightData.length < 5) return "low";
-
-  const dates = weightData.map((d) => new Date(d.createdAt));
-  const daysBetweenWeighIns = [];
-
-  // Populate daysBetweenWeighIns by calculating days between each entry
-  for (let i = 1; i < dates.length; i++) {
-    const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
-    daysBetweenWeighIns.push(diff);
-  }
-
-  // Get the last 30 days of data
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentWeighIns = weightData.filter(
-    (d) => new Date(d.date) >= thirtyDaysAgo
-  ).length;
-
-  // Calculate confidence based on frequency and consistency
-  if (recentWeighIns < 8) return "low"; // Less than 2 weigh-ins per week
-  if (recentWeighIns < 12) return "medium"; // Less than 3 weigh-ins per week
-
-  // Check consistency of weigh-ins
-  // Calculate the standard deviation (square root of variance) of the days between weigh-ins, compared to an ideal interval of 3 days.
-  const variance = Math.sqrt(
-    daysBetweenWeighIns.reduce((a, b) => a + Math.pow(b - 3, 2), 0) /
-      daysBetweenWeighIns.length
-  );
-
-  if (variance > 4) return "low";
-  if (variance > 2) return "medium";
-  return "high";
 };
 
 export {

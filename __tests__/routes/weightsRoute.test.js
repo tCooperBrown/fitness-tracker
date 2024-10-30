@@ -149,7 +149,6 @@ describe("retrieving user weight projections", () => {
       currentTrendWeight: 78.60458069164304,
       dailyChangeTrend: -0.07600743782365099,
       projectedWeight: 76.3243575569335,
-      confidence: "low",
     });
   });
 });
