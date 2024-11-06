@@ -8,6 +8,8 @@ import session from "express-session";
 import { db } from "./dbConnection.js";
 import { errorHandler, errorLogger } from "./middleware/errorMiddleware.js";
 import cors from "cors";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const store = new ConnectSessionKnexStore({
   knex: db,
@@ -29,17 +31,16 @@ app.use(
   })
 );
 
-app.use(express.json());
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
   })
 );
+app.use(express.json());
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Routes
 app.use(authRouter);
