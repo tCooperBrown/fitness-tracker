@@ -5,6 +5,7 @@ import {
   retrieveWeightData,
   verifyExistingScaleWeight,
 } from "../controllers/weightsController.js";
+import { asyncHandler } from "../middleware/errorMiddleware.js";
 
 const router = express.Router();
 
@@ -42,5 +43,15 @@ router.delete("/api/weights/:date", isAuthenticated, async (req, res) => {
     });
   }
 });
+
+router.post(
+  "/api/weights/projection",
+  isAuthenticated,
+  asyncHandler(async (req, res) => {
+    const weightData = await retrieveWeightData(req.user.id);
+    const projection = calculateWeightProjection(weightData);
+    res.json(projection);
+  })
+);
 
 export { router };
