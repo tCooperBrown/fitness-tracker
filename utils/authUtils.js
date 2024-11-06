@@ -7,3 +7,7 @@ export const logIn = (credentials) => {
 export const logOut = () => {
   return testClient.post("/logout");
 };
+
+export const checkAuth = () => {
+  return testClient.get("/api/auth");
+};

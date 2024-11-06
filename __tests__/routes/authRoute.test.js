@@ -63,3 +63,7 @@ describe("logging out of a user account", () => {
       });
   });
 });
+
+describe("checkAuth", () => {
+  test("calling checkAuth with valid session", async () => {});
+});

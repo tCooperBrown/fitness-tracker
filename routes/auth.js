@@ -27,6 +27,7 @@ const signupSchema = z.object({
   }, "Age must be between 18 and 120 years"),
 });
 
+// Note: Will delete "/" in favour of "/api/auth" in future commit.
 router.get("/", (req, res, next) => {
   // Return once ready for frontend implementation.
   if (req.isAuthenticated()) {
@@ -36,6 +37,28 @@ router.get("/", (req, res, next) => {
   }
 
   res.json({ message: "Session not currently authenticated." });
+});
+
+router.get("/api/auth", (req, res, next) => {
+  if (req.isAuthenticated()) {
+    console.log(req.isAuthenticated());
+    console.log(req.headers);
+    res.json({
+      status: "success",
+      message: `Currently serving user with email: ${req.user.email}`,
+      authenticated: true,
+    });
+    return;
+  }
+
+  console.log(req.isAuthenticated());
+  console.log(req.headers);
+
+  res.status(403).json({
+    status: "fail",
+    message: "Session not authenticated.",
+    authenticated: false,
+  });
 });
 
 router.post("/logout", (req, res, next) => {
